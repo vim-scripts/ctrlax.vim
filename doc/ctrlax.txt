@@ -5,7 +5,7 @@ For instructions on installing this file, type the following command in vim >
 	:help add-local-help
 
 Author:		Preben 'Peppe' Guldberg <peppe@xs4all.nl>
-Last Change:	13th February, 2003
+Last Change:	23th July, 2003
 
 ==============================================================================
 							*ctrlax-contensts*
@@ -26,11 +26,13 @@ It does so by calling user definable functions which finds the next
 incrementable item on the current line and replaces it with the N'th next
 value as defined in the function.
 
+By default, all the functions listed at |ctrlax-bundled-fun| are included,
+which will emulate standard vim functionality and cycle through long as well
+as short names of months and days.
+
 As with <C-A> and <C-X>, the search includes the current cursor position.
 
 After the increment, the cursor is at the end of the new value.
-
-							*ctrl
 
 ==============================================================================
 Usage and Mappings						*ctrlax-usage*
@@ -42,12 +44,13 @@ For more about <Leader>, see |<Leader>|
 If you want to completely replace <C-A> and <C-X>, add the following mappings
 to your vimrc >
 
-	:nnoremap <C-A> <Plug>Ctrl_A
-	:nnoremap <C-X> <Plug>Ctrl_X
+	:nmap <C-A> <Plug>Ctrl_A
+	:nmap <C-X> <Plug>Ctrl_X
 
+<							*ctrlax_functions*
 To get added functionality, you will have to define which functions to be used
 by the plugin. This is done by specifying them as a comma separated list of
-function names in a variable called ctrlax_functions. An example of this is >
+function names in a variable named ctrlax_functions. An example of this is >
 
 	:let ctrlax_functions =
 		\ '_vim_default_,CtrlAX_ShortDays,CtrlAX_LongDays'
@@ -78,6 +81,9 @@ The plugin comes with a few functions predefined:
 	CtrlAX_ShortMonths	Cycle through months by their short name
 	CtrlAX_LongDays		Cycle through week days by their long name
 	CtrlAX_ShortDays	Cycle through week days by their short name
+
+The default is to include all of these in the ctrlax_functions variable in
+this order.
 
 All but the vim emulation can be tweaked a bit - see below.
 
@@ -118,20 +124,20 @@ that order.
 
 Next you will have to populate the array as: >
 
-	:let danish_moths_wrap	=  1		" Wrap around array
-	:let danish_moths	=  12		" Number of months (!)
-	:let danish_moths_0	= 'Januar'	" Zero based index
-	:let danish_moths_1	= 'Februar'
-	:let danish_moths_2	= 'Marts'
-	:let danish_moths_3	= 'April'
-	:let danish_moths_4	= 'Maj'
-	:let danish_moths_5	= 'Juni'
-	:let danish_moths_6	= 'Juli'
-	:let danish_moths_7	= 'August'
-	:let danish_moths_8	= 'September'
-	:let danish_moths_9	= 'Oktober'
-	:let danish_moths_10	= 'November'
-	:let danish_moths_11	= 'December'
+	:let danish_months_wrap	=  1		" Wrap around array
+	:let danish_months	=  12		" Number of months (!)
+	:let danish_months_0	= 'Januar'	" Zero based index
+	:let danish_months_1	= 'Februar'
+	:let danish_months_2	= 'Marts'
+	:let danish_months_3	= 'April'
+	:let danish_months_4	= 'Maj'
+	:let danish_months_5	= 'Juni'
+	:let danish_months_6	= 'Juli'
+	:let danish_months_7	= 'August'
+	:let danish_months_8	= 'September'
+	:let danish_months_9	= 'Oktober'
+	:let danish_months_10	= 'November'
+	:let danish_months_11	= 'December'
 
 You can specify what kind of matches by setting a ctrlax_longdays_style
 variable. The default is verbatim as if you had specified >
@@ -144,7 +150,7 @@ and global scope in that order.
 The following styles are supported:
 
 	Value		Effect ~
-	verbatim	As specified in array (English uses inititial caps)
+	verbatim	As specified in array (English uses initial caps)
 	upper		Matches upper case variants only
 	lower		MAtches lower case variants only
 	any		Ignores case
@@ -189,7 +195,7 @@ ctrlax_shortdays_style.
 Writing New Functions					*ctrlax-more-fun*
 
 You can create your own functions in addition to the ones included with the
-plugin. A couple of helper functions are listed under |ctrlax-extra-fun|
+plugin. A couple of helper functions are listed under |ctrlax-extra-fun|.
 
 The functions are passed three arguments:
 

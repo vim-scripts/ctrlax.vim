@@ -1,7 +1,7 @@
 " ctrlax.vim:   (plugin) Functions to enhance <C-A> and <C-X>
 " Maintainer:   Preben 'Peppe' Guldberg <peppe@xs4all.nl>
-" Version:      1.0
-" Last Change:  12th February, 2003
+" Version:      1.1
+" Last Change:  23th July, 2003
 
 " Exit quickly when already loaded or when 'compatible' is set.
 if exists("loaded_ctrlax") || &cp
@@ -24,6 +24,13 @@ nnoremap <unique> <script> <Plug>Ctrl_X <SID>Ctrl_X
 " And, finally, do something useful :-)
 nnoremap <SID>Ctrl_A    :<C-U>call <SID>CtrlAX(v:count1)<CR>
 nnoremap <SID>Ctrl_X    :<C-U>call <SID>CtrlAX(- v:count1)<CR>
+
+" Set some default functions
+let s:ctrlax_functions = "_vim_default_"
+let s:ctrlax_functions = s:ctrlax_functions . ",CtrlAX_LongMonths"
+let s:ctrlax_functions = s:ctrlax_functions . ",CtrlAX_ShortMonths"
+let s:ctrlax_functions = s:ctrlax_functions . ",CtrlAX_LongDays"
+let s:ctrlax_functions = s:ctrlax_functions . ",CtrlAX_ShortDays"
 
 " Function to enhance <C-A> and <C-X>
 " It uses functions set in "[wbg]:ctrlax_functions" as a comma separated
@@ -61,7 +68,7 @@ fun! s:CtrlAX(n)
     " We can't do this - there seem to be a bug in vim with {...} here
     " let funs = (funvar == '' ? '_vim_default_' : {funvar})
     if funvar == ''
-        let funs = '_vim_default_'
+        let funs = s:ctrlax_functions
     else
         let funs = {funvar}
     endif
@@ -102,12 +109,15 @@ fun! s:CtrlAX(n)
             return
         endif
         let tmp = {f}(str, col, a:n)
+        if tmp !~ '^\d\+,\d\+,'
+            continue
+        endif
         let c = stridx(tmp, ',')
-        let i = strpart(tmp, 0, c)
-        if i =~ '^\d\+$' && i >= 0 && i <= maxcol
+        let i = strpart(tmp, 0, c) + 0      " number convertion
+        if i <= maxcol
             let maxcol = i
             let c2 = matchend(tmp, '^[^,]*,[^,]*')
-            let len = strpart(tmp, c + 1, c2 - c)
+            let len = strpart(tmp, c + 1, c2 - c) + 0
             let sub = strpart(tmp, c2 + 1)
         endif
     endwhile
