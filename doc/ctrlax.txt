@@ -1,0 +1,291 @@
+*ctrlax.txt*  Plugin to enhance <C-A> and <C-X>
+
+For instructions on installing this file, type the following command in vim >
+
+	:help add-local-help
+
+Author:		Preben 'Peppe' Guldberg <peppe@xs4all.nl>
+Last Change:	13th February, 2003
+
+==============================================================================
+							*ctrlax-contensts*
+
+Introduction			|ctrlax-intro|
+Usage and Mappings		|ctrlax-usage|
+Bundled Functions		|ctrlax-bundled-fun|
+Writing New Functions		|ctrlax-more-fun|
+Additional Functions		|ctrlax-extra-fun|
+
+==============================================================================
+Introduction							*ctrlax-intro*
+
+This plugin enhances vim's incrementing features, by default bound to <C-A>
+and <C-X>.
+
+It does so by calling user definable functions which finds the next
+incrementable item on the current line and replaces it with the N'th next
+value as defined in the function.
+
+As with <C-A> and <C-X>, the search includes the current cursor position.
+
+After the increment, the cursor is at the end of the new value.
+
+							*ctrl
+
+==============================================================================
+Usage and Mappings						*ctrlax-usage*
+
+The plugin adds mappings for <Leader><C-A> and <Leader><C-X> that by default
+emulates <C-A> and <C-X>. They honour counts as <C-A> and <C-X>.
+For more about <Leader>, see |<Leader>|
+
+If you want to completely replace <C-A> and <C-X>, add the following mappings
+to your vimrc >
+
+	:nnoremap <C-A> <Plug>Ctrl_A
+	:nnoremap <C-X> <Plug>Ctrl_X
+
+To get added functionality, you will have to define which functions to be used
+by the plugin. This is done by specifying them as a comma separated list of
+function names in a variable called ctrlax_functions. An example of this is >
+
+	:let ctrlax_functions =
+		\ '_vim_default_,CtrlAX_ShortDays,CtrlAX_LongDays'
+
+This will first emulate vim's behaviour (the special _vim_default_ directive),
+then try to find short day names like 'Mon', 'Tue', etc. and finally look for
+long day names like 'Monday', 'Tuesday', etc.	|ctrlax-bundled-fun|
+
+The plugin will check for this variable as a window local variable (|w:var|),
+a buffer local variable (|b:var|) and finally a global variable (|g:var|), in
+that order.
+
+The order of the functions can be crucial. If two functions match at the same
+point, the last specified is used. Hence, if you have functions that matches
+eg. 'foo' and 'foobar', be sure to include the one that matches the longer
+string after the other.
+
+You can specify your own functions, too. For more, see |ctrlax-more-fun|
+
+==============================================================================
+Bundled Functions					*ctrlax-bundled-fun*
+
+The plugin comes with a few functions predefined:
+
+	Function Name		Functionality ~
+	_vim_default_		Emulate vim
+	CtrlAX_LongMonths	Cycle through months by their long name
+	CtrlAX_ShortMonths	Cycle through months by their short name
+	CtrlAX_LongDays		Cycle through week days by their long name
+	CtrlAX_ShortDays	Cycle through week days by their short name
+
+All but the vim emulation can be tweaked a bit - see below.
+
+							*ctrlax-vim_default*
+To include vim emulation among the capabilities, you can include
+_vim_default_ as one of the functions.
+
+_vim_default_ is internally expanded to use functions that emulate vim's
+increment on decimal, octal and hex numbers plus single characters. The plugin
+always looks for decimal values to increment, whereas the others depend onare
+the 'nrformats' option. |'nrformats'| |ctrlax-decimal-note|
+
+You will most likely want to specify _vim_default_ first in the list,
+particularly if you have "alpha" included in 'nrformats'.
+
+							*ctrlax-decimal-note*
+The plugin try as best as it can to work with decimal numbers. Unfortunately I
+have not found a way to handle very high numbers (positive or negative).
+
+The problem I face is that vim can uses signed integers for expressions, but
+is more clever when it comes to <C-A> and <C-X> where the sign is handled
+seperately. On a 32 bit machine, numbers in expressions are limited to (-2^31)
+to (2^31-1), while <C-A> and <C-X> operate between (-2^31+1) and (2^32-1).
+
+							*ctrlax-long-months*
+By including CtrlAX_LongMonths in the function list, vim will cycle through
+month names. Matches complete words only.
+
+The default is to use English names. You can overwrite this by specifying a
+variable array that lists the month names in your own language by setting a
+variable: >
+
+	:let ctrlax_longmonths = 'danish_months'
+
+The plugin will check for this variable as a window local variable (|w:var|),
+a buffer local variable (|b:var|) and finally a global variable (|g:var|), in
+that order.
+
+Next you will have to populate the array as: >
+
+	:let danish_moths_wrap	=  1		" Wrap around array
+	:let danish_moths	=  12		" Number of months (!)
+	:let danish_moths_0	= 'Januar'	" Zero based index
+	:let danish_moths_1	= 'Februar'
+	:let danish_moths_2	= 'Marts'
+	:let danish_moths_3	= 'April'
+	:let danish_moths_4	= 'Maj'
+	:let danish_moths_5	= 'Juni'
+	:let danish_moths_6	= 'Juli'
+	:let danish_moths_7	= 'August'
+	:let danish_moths_8	= 'September'
+	:let danish_moths_9	= 'Oktober'
+	:let danish_moths_10	= 'November'
+	:let danish_moths_11	= 'December'
+
+You can specify what kind of matches by setting a ctrlax_longdays_style
+variable. The default is verbatim as if you had specified >
+
+	:let ctrlax_longdays_style = 'verbatim'
+
+As with the ctrlax_shortmonths variable, it is checked for in window, local
+and global scope in that order.
+
+The following styles are supported:
+
+	Value		Effect ~
+	verbatim	As specified in array (English uses inititial caps)
+	upper		Matches upper case variants only
+	lower		MAtches lower case variants only
+	any		Ignores case
+
+The incremented value for verbatim, upper and lower case matches is the
+incremented array index verbatim, made upper case and lower case,
+respectively.
+
+When the style is "any", the result depends on how the matched month is
+composed:
+
+	Composition		Result ~
+	all lower case		all lower case
+	all upper case		all upper case
+	mixed case		verbatim copy of array value
+
+							*ctrlax-short-months*
+By including CtrlAX_ShortMonths in the function list, vim will cycle through
+short month names like 'Jan', 'Feb', etc. Matches complete words only.
+
+This function is implemented as described under |ctrlax-long-months|. The
+variables to control what is matched are ctrlax_shortmonths and
+ctrlax_shortmonths_style.
+
+							*ctrlax-long-days*
+By including CtrlAX_LongDays in the function list, vim will cycle through
+week day names. Matches complete words only.
+
+This function is implemented as described under |ctrlax-long-months|. The
+variables to control what is matched are ctrlax_longmonths and
+ctrlax_longdays_style.
+
+							*ctrlax-short-days*
+By including CtrlAX_ShortDays in the function list, vim will cycle through
+short week day names like 'Mon', 'Tue', etc. Matches complete words only.
+
+This function is implemented as described under |ctrlax-long-months|. The
+variables to control what is matched are ctrlax_shortdays and
+ctrlax_shortdays_style.
+
+==============================================================================
+Writing New Functions					*ctrlax-more-fun*
+
+You can create your own functions in addition to the ones included with the
+plugin. A couple of helper functions are listed under |ctrlax-extra-fun|
+
+The functions are passed three arguments:
+
+      1.  A string: getline(line('.'))
+      2.  The current string position: col('.') - 1
+      3.  How much to increment the value (may be negative)
+
+The functions must return a string containing, in order:
+
+      1.  The new position in the string
+      2.  A comma
+      3.  The length of the text to replace
+      4.  Another comma
+      5.  The replacement string
+
+While not mandatory, the intent is that functions find a string which end at
+or later than the current position in the string.
+
+The functions are not allowed to move the cursor position (checked) and not
+supposed to change buffers or buffer content. A side effect is that functions
+can rely on the cursor staying put if they want to check buffer context.
+
+As a silly example, you could step through "foo", "bar" and "baz" as words,
+without wrapping around, with this >
+
+	:let ctrlax_functions = 'FooBarBaz'
+	fun! FooBarBaz(str, pos, n)
+	    let min = (a:pos < 2 ? 0 : a:pos - 2)
+	    let i = match(a:str, '\<\(.\{'.min.',}\)\@<=\(foo\|bar\|baz\)\>')
+	    if i == -1
+	        return '-1,,'
+	    else
+		let str = matchstr(a:str, '\(foo\|bar\|baz\)', i)
+		let str3s = 'foobarbaz'
+		let len3s = strlen(str3s)
+		let n =  3 * a:n + stridx(str3s, str)
+		if n <= 0
+		    let val = strpart(str3s, 0, 3)
+		elseif n >= len3s
+		    let val = strpart(str3s, len3s - 3)
+		else
+		    let val = strpart(str3s, n, 3)
+		endif
+		return i . ',3,' . val
+	    endif
+	endfun
+
+==============================================================================
+Additional Functions					*ctrlax-extra-fun*
+
+The plugin includes a couple of helper functions to match words.
+
+							*strlax-wordarray*
+The main version is CtrlAX_WordArray() defined as
+
+	fun! CtrlAX_WordArray(str, pos, array, style, n)
+
+When wrting a function using this, you  pass str, pos and n on from your own
+argument list, supply the name of a variable array the sytle with which you
+want to match.
+
+The variable array is like the one outlined under |ctrlax-long-months|. The
+{array_name}_wrap variable can be omitted, in which case CtrlAX_WordArray()
+wraps around the array.
+
+It is essentianl that the variable name is accessible to CtrlAX_WordArray() -
+that is, it cannot be a function or script local variable.
+
+With this, the silly example under |ctrlax-more-fun| can be implemented as >
+
+	let ctrlax_functions = 'FooBarBaz'
+	let fbb_wrap = 0
+	let fbb = 3
+	let fbb_0 = 'foo'
+	let fbb_1 = 'bar'
+	let fbb_2 = 'baz'
+	fun! FooBarBaz(str, pos, n)
+		return CtrlAX_WordArray(a:str, a:pos, 'fbb', 'lower', a:n)
+	endfun
+<
+							*strlax-wordarray-str*
+While much simpler, you may (for the price of a little overhead) want to
+shorten it even further by using CtrlAX_WordArrayStr() defined as
+
+	fun! CtrlAX_WordArrayStr(str, pos, strarray, style, n, ...)
+
+This is a wrapper around CtrlAX_WordArray(), where strarray is a comma
+separated list of words. The optional argument allows you specify whether to
+wrap or not (defaults to do so).
+
+The silly example can be simplified even further to >
+
+	let ctrlax_functions = 'FooBarBaz'
+	fun! FooBarBaz(str, pos, n)
+		let str = 'foo,bar,baz'
+		return CtrlAX_WordArrayStr(a:str, a:pos, str, 'lower', a:n, 0)
+	endfun
+
+vim:tw=78:ts=8:ft=help

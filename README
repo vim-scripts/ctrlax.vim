@@ -1,0 +1,14 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=566
+
+The plugin implements an enhanced version of vim's incrementing features with
+<C-A> and <C-X> using functions to find and replace strings according to any
+inline scheme.
+
+By default vim behaviour is emulated, plus it cycles through names of months
+and week days (trying full name, then abbreviated).
+
+The language for months and week days is English, but it is fairly straight
+forward to localise this. An example of localisation is provided in the
+documentation.
+
+Extra functions meant to assist in writing new functions are included, too.
